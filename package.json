@@ -1,0 +1,22 @@
+{
+  "name": "mer-podcast",
+  "version": "1.0.0",
+  "description": "네이버 블로그 포스트를 팟캐스트로 자동 변환",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "run-now": "node src/server.js --run-now"
+  },
+  "dependencies": {
+    "@google-cloud/text-to-speech": "^5.0.0",
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.3.0",
+    "express": "^4.18.0",
+    "node-cron": "^3.0.3",
+    "rss": "^1.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
