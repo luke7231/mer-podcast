@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 const FEED_PATH = path.join(__dirname, '..', 'data', 'feed.json');
+const AUDIO_DIR = path.join(__dirname, '..', 'audio');
+const MAX_EPISODES = parseInt(process.env.MAX_EPISODES || '30', 10);
 
 /**
  * 처리된 에피소드 목록 로드 (없으면 빈 배열)
@@ -35,6 +37,21 @@ function addEpisode(episode) {
   // 중복 방지
   if (episodes.find(e => e.postId === episode.postId)) return;
   episodes.unshift(episode); // 최신 포스트를 앞에
+
+  // 최대 에피소드 수 초과 시 오래된 것부터 정리
+  while (episodes.length > MAX_EPISODES) {
+    const oldest = episodes.pop();
+    const audioFile = path.join(AUDIO_DIR, oldest.filename);
+    if (fs.existsSync(audioFile)) {
+      try {
+        fs.unlinkSync(audioFile);
+        console.log(`[정리] 오래된 에피소드 삭제: ${oldest.filename}`);
+      } catch (err) {
+        console.error(`[정리] 파일 삭제 실패: ${oldest.filename}`, err.message);
+      }
+    }
+  }
+
   saveEpisodes(episodes);
 }
 

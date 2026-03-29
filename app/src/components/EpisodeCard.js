@@ -34,7 +34,9 @@ export default function EpisodeCard({ episode }) {
           <Text style={[styles.title, isActive && styles.activeTitle]} numberOfLines={2}>
             {episode.title}
           </Text>
-          <Text style={styles.date}>{formatDate(episode.pubDate)}</Text>
+          <Text style={styles.date}>
+            {formatDate(episode.pubDate)}{episode.duration ? `  ·  ${episode.duration}` : ''}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>

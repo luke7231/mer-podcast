@@ -5,11 +5,28 @@ const path = require('path');
 const fs = require('fs');
 
 const { fetchRecentPosts, fetchPostText } = require('./scraper');
-const { convertTextToMp3, getFileSize, makeFilename } = require('./tts');
+const { convertTextToMp3, getFileSize, makeFilename, estimateDuration } = require('./tts');
 const { addEpisode, getProcessedIds, generateRssXml, loadEpisodes } = require('./feed');
 
 const PORT = process.env.PORT || 3000;
 const BASE_URL = (process.env.BASE_URL || `http://localhost:${PORT}`).replace(/\/$/, '');
+
+// 환경변수 검증
+function validateEnv() {
+  const gcpCreds = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+  if (!gcpCreds) {
+    console.warn('[경고] GOOGLE_APPLICATION_CREDENTIALS 환경변수가 설정되지 않았습니다. TTS 변환이 실패합니다.');
+  } else if (!require('fs').existsSync(gcpCreds)) {
+    console.warn(`[경고] GCP 자격증명 파일을 찾을 수 없습니다: ${gcpCreds}`);
+  }
+
+  if (BASE_URL.includes('localhost') || BASE_URL.includes('127.0.0.1')) {
+    console.warn('[경고] BASE_URL이 로컬 주소입니다. 팟캐스트 앱에서 오디오 파일에 접근할 수 없을 수 있습니다.');
+    console.warn('       .env에서 BASE_URL을 서버의 공개 주소로 설정하세요. 예: BASE_URL=https://your-server.com');
+  }
+}
+
+validateEnv();
 const CRON_SCHEDULE = process.env.CRON_SCHEDULE || '0 7 * * *'; // 매일 오전 7시
 
 const app = express();
@@ -93,6 +110,7 @@ async function processNewPosts() {
     try {
       const filePath = await convertTextToMp3(text, filename);
       const fileSize = getFileSize(filePath);
+      const duration = estimateDuration(fileSize);
 
       addEpisode({
         postId: post.id,
@@ -101,6 +119,7 @@ async function processNewPosts() {
         pubDate: post.pubDate,
         filename,
         fileSize,
+        duration,
       });
 
       console.log(`[TTS] 완료: ${filename} (${(fileSize / 1024 / 1024).toFixed(1)} MB)`);

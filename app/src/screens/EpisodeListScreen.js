@@ -12,7 +12,7 @@ import { usePlayer } from '../context/PlayerContext';
 
 export default function EpisodeListScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const { currentEpisode } = usePlayer();
+  const { currentEpisode, restoreResume } = usePlayer();
 
   const [episodes, setEpisodes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,13 +25,15 @@ export default function EpisodeListScreen({ navigation }) {
     try {
       const data = await fetchEpisodes();
       setEpisodes(data);
+      // 첫 로드 시에만 이어듣기 복원 시도
+      if (!isRefresh) restoreResume(data);
     } catch (e) {
       setError('에피소드를 불러오지 못했습니다.\n서버 연결을 확인해주세요.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [restoreResume]);
 
   useEffect(() => { load(); }, [load]);
 

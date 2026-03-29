@@ -119,6 +119,20 @@ function getFileSize(filePath) {
 }
 
 /**
+ * MP3 파일 크기로 재생 시간 추정 (128kbps 기준)
+ * @param {number} bytes
+ * @returns {string} "HH:MM:SS" 또는 "MM:SS" 형식
+ */
+function estimateDuration(bytes) {
+  const totalSec = Math.round(bytes / (128 * 1000 / 8));
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+/**
  * 날짜 + postId 기반 파일명 생성
  */
 function makeFilename(postId, pubDate) {
@@ -127,4 +141,4 @@ function makeFilename(postId, pubDate) {
   return `${dateStr}_${postId}.mp3`;
 }
 
-module.exports = { convertTextToMp3, getFileSize, makeFilename };
+module.exports = { convertTextToMp3, getFileSize, makeFilename, estimateDuration };

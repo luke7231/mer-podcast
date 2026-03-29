@@ -18,14 +18,28 @@ function formatMs(ms) {
 export default function PlayerScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const {
-    currentEpisode, isPlaying, isLoading,
+    currentEpisode, isPlaying, isLoading, error,
     position, duration, speed,
-    togglePlay, seek, seekTo, cycleSpeed,
+    togglePlay, seek, seekTo, cycleSpeed, playEpisode,
   } = usePlayer();
 
   if (!currentEpisode) {
     navigation.goBack();
     return null;
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, styles.center, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 16 }]}>
+        <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.goBack()}>
+          <Text style={styles.closeIcon}>∨</Text>
+        </TouchableOpacity>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryBtn} onPress={() => playEpisode(currentEpisode)}>
+          <Text style={styles.retryBtnText}>다시 시도</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
 
   const progress = duration > 0 ? position / duration : 0;
@@ -102,6 +116,26 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     alignItems: 'center',
     paddingHorizontal: 32,
+  },
+  center: {
+    justifyContent: 'center',
+  },
+  errorText: {
+    color: COLORS.textSecondary,
+    fontSize: 15,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryBtn: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  retryBtnText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 15,
   },
   closeBtn: {
     alignSelf: 'center',
