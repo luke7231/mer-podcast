@@ -6,7 +6,7 @@ const fs = require('fs');
 
 const { fetchRecentPosts, fetchPostText } = require('./scraper');
 const { convertTextToMp3, getFileSize, makeFilename } = require('./tts');
-const { addEpisode, getProcessedIds, generateRssXml } = require('./feed');
+const { addEpisode, getProcessedIds, generateRssXml, loadEpisodes } = require('./feed');
 
 const PORT = process.env.PORT || 3000;
 const BASE_URL = (process.env.BASE_URL || `http://localhost:${PORT}`).replace(/\/$/, '');
@@ -26,6 +26,20 @@ app.get('/rss', (req, res) => {
   } catch (err) {
     console.error('[RSS] 생성 오류:', err.message);
     res.status(500).send('RSS 생성 오류');
+  }
+});
+
+// 앱용 에피소드 JSON API
+app.get('/episodes', (req, res) => {
+  try {
+    const episodes = loadEpisodes().map(ep => ({
+      ...ep,
+      audioUrl: `${BASE_URL}/audio/${ep.filename}`,
+    }));
+    res.json(episodes);
+  } catch (err) {
+    console.error('[API] episodes 오류:', err.message);
+    res.status(500).json({ error: '에피소드 목록 오류' });
   }
 });
 
